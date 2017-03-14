@@ -67,6 +67,9 @@
         <field id="DontShowSubscriptionPackages" type="bool" />
         <field id="ShowSubscriptionPackagesCallback" type="bool" onChange="onShowSubscriptionPackagesCallback"/>
 
+        <!-- Subtitles -->
+        <field id="Subtitles" type="roArray" />
+
     </interface>
 
     <!-- main handler -->

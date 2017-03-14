@@ -93,6 +93,10 @@ Sub RunUserInterface()
 
                 rowList = m.gridScreen.findNode("RowList")
                 'print rowList
+                playerInfo = GetPlayerInfo(content.id, {"app_key": GetApiConfigs().app_key})
+                print "Subtitles: "; playerInfo.subtitles
+                m.detailsScreen.Subtitles = playerInfo.subtitles
+
                 m.loadingIndicator.control = "stop"
             else if msg.getNode() = "Favorites" and msg.getField() = "visible" and msg.getData() = true
                 m.loadingIndicator.control = "start"
@@ -296,6 +300,7 @@ sub playVideo(screen as Object, auth As Object)
 
     'print "FUNC: PlayVideo: ", screen.content
     playerInfo = GetPlayerInfo(screen.content.id, auth)
+    print "playerInfo: "; playerInfo.subtitles[0]
 
     screen.content.stream = playerInfo.stream
     screen.content.streamFormat = playerInfo.streamFormat
@@ -309,6 +314,11 @@ sub playVideo(screen as Object, auth As Object)
         m.VideoPlayer.observeField("position", m.port)
     end if
 
+    subtitle_config = {
+        TrackName: playerInfo.subtitles[0].file
+    }
+
+    m.videoPlayer.content.subtitleconfig = subtitle_config
     m.loadingIndicator.control = "stop"
     print "[Main] Playing video"
     m.videoPlayer.visible = true

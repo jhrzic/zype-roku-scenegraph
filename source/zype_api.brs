@@ -238,7 +238,7 @@ Function GetAppConfigs(urlParams = {} As Object) As Object
     data = response.response
   end if
 
-  print "GetAppConfigs: "; data
+  ' print "GetAppConfigs: "; data
   ' data.device_linking = true
   ' data.in_app_purchase = true
   return data
@@ -332,6 +332,7 @@ Function GetPlayerInfo(videoid As String, urlParams = {} As Object) As Object
   info.on_air = false
   info.has_access = false
   info.scheduledAds = []
+  info.subtitles = []
 
   url = GetApiConfigs().player_endpoint + "embed/" + videoid + "/"
   ' params = AppendAppKeyToParams(urlParams)
@@ -374,6 +375,13 @@ Function GetPlayerInfo(videoid As String, urlParams = {} As Object) As Object
           end if
         end for
       end if
+
+      if response.body.DoesExist("subtitles")
+        for each subtitle in response.body.subtitles
+          info.subtitles.push({file: subtitle.file, language: subtitle.label})
+        end for
+      end if
+
     end if
   end if
 

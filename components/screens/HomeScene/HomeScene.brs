@@ -62,10 +62,12 @@ Function OnRowItemSelected()
     else
         ? "[HomeScene] Detail Screen"
         m.gridScreen.visible = "false"
+        m.top.random = Rnd(50)
         m.detailsScreen.content = m.gridScreen.focusedContent
         m.detailsScreen.setFocus(true)
         m.detailsScreen.visible = "true"
         m.screenStack.push(m.detailsScreen)
+        m.top.SubtitleSelected = false
     end if
     print "Subscription Plans: "; m.top.SubscriptionPlans
 End Function
@@ -265,7 +267,12 @@ Function OnKeyEvent(key, press) as Boolean
         print "Dialog: "; m.top.dialog
         if(m.top.dialog <> invalid)
             buttonIndex = m.top.dialog.buttonSelected
-            if(buttonIndex = 0 and key = "OK")
+            if(m.top.dialog.title = "Choose Subtitle" AND key = "OK")
+                m.top.SubtitleSelectedIndex = buttonIndex
+                m.top.SubtitleSelected = true
+                print "[HomeScreen] m.top.SubtitleSelected: "; m.top.SubtitleSelected
+                m.top.dialog.close = true
+            else if(buttonIndex = 0 and key = "OK")
                 m.top.dialog.close = true
             end if
             print "buttonIndex: "; buttonIndex

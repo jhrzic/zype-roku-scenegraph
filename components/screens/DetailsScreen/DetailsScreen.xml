@@ -68,7 +68,12 @@
         <field id="ShowSubscriptionPackagesCallback" type="bool" onChange="onShowSubscriptionPackagesCallback"/>
 
         <!-- Subtitles -->
-        <field id="Subtitles" type="roArray" />
+        <field id="Subtitles" type="roArray" onChange="onSubtitlesLoaded" />
+        <field id="SubtitleButtonsShown" type="bool" />
+        <field id="SubtitleSelected" type="integer" onChange="onSubtitleSelected" />
+        <field id="SetSubtitleLabel" type="string" onChange="onSetSubtitleLabel" />
+        <field id="SubtitleState" type="string" onChange="onSetSubtitleState" />
+
 
     </interface>
 

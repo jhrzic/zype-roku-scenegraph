@@ -36,6 +36,11 @@
 
         <!-- Subscription Plans -->
         <field id="SubscriptionPlans" type="roArray" />
+
+        <field id="random" type="integer" />
+
+        <field id="SubtitleSelected" type="bool" />
+        <field id="SubtitleSelectedIndex" type="integer" />
     </interface>
 
     <!-- main handler -->

@@ -60,6 +60,8 @@ Sub RunUserInterface()
     InitAuthenticationParams()
 
     m.scene.observeField("SearchString", m.port)
+    m.scene.observeField("random", m.port)
+    m.scene.observeField("SubtitleSelected", m.port)
 
     m.gridScreen = m.scene.findNode("GridScreen")
 
@@ -93,10 +95,7 @@ Sub RunUserInterface()
 
                 rowList = m.gridScreen.findNode("RowList")
                 'print rowList
-                playerInfo = GetPlayerInfo(content.id, {"app_key": GetApiConfigs().app_key})
-                print "Subtitles: "; playerInfo.subtitles
-                m.detailsScreen.Subtitles = playerInfo.subtitles
-
+                
                 m.loadingIndicator.control = "stop"
             else if msg.getNode() = "Favorites" and msg.getField() = "visible" and msg.getData() = true
                 m.loadingIndicator.control = "start"
@@ -152,7 +151,15 @@ Sub RunUserInterface()
                 _isSubscribed = isSubscribed(lclScreen.content.subscription_required)
 
                 handleButtonEvents(2, _isSubscribed, lclScreen)
-
+            else if (msg.getNode() = "DetailsScreen" and msg.getField() = "itemSelected" and msg.getData() = 2)
+                lclScreen = m.detailsScreen
+                _isSubscribed = isSubscribed(lclScreen.content.subscription_required)
+                handleButtonEvents(3, _isSubscribed, lclScreen)
+            
+            else if (msg.getNode() = "DetailsScreen" and msg.getField() = "itemSelected" and msg.getData() = 3)
+                lclScreen = m.detailsScreen
+                _isSubscribed = isSubscribed(lclScreen.content.subscription_required)
+                handleButtonEvents(4, _isSubscribed, lclScreen)
             else if msg.getField() = "position"
                 ' print m.videoPlayer.position
                 ' print GetLimitStreamObject().limit
@@ -229,7 +236,17 @@ Sub RunUserInterface()
                     AddUdidToReg(GenerateUdid())
                     pin.text = GetPin(GetUdidFromReg())
                 end if
+
+            else if msg.getField() = "random"
+                playerInfo = GetPlayerInfo(m.detailsScreen.content.id, {"app_key": GetApiConfigs().app_key})
+                print "Subtitles: "; playerInfo.subtitles
+                m.detailsScreen.Subtitles = playerInfo.subtitles
+            
+            else if msg.getField() = "SubtitleSelected"
+                language = m.detailsScreen.Subtitles[m.scene.SubtitleSelectedIndex].language
+                m.detailsScreen.SetSubtitleLabel = language
             end if
+
         end if
     end while
 
@@ -314,11 +331,15 @@ sub playVideo(screen as Object, auth As Object)
         m.VideoPlayer.observeField("position", m.port)
     end if
 
-    subtitle_config = {
-        TrackName: playerInfo.subtitles[0].file
-    }
+    print "m.scene.SubtitleSelected: "; m.scene.SubtitleSelected
+    if(m.scene.SubtitleSelected = true AND m.detailsScreen.SubtitleState = "on")
+        subtitle_config = {
+            TrackName: playerInfo.subtitles[m.scene.SubtitleSelectedIndex].file
+        }
 
-    m.videoPlayer.content.subtitleconfig = subtitle_config
+        m.videoPlayer.content.subtitleconfig = subtitle_config
+    end if
+
     m.loadingIndicator.control = "stop"
     print "[Main] Playing video"
     m.videoPlayer.visible = true
@@ -386,8 +407,18 @@ sub playVideoWithAds(screen as Object, auth as Object)
     end if
 
     if playContent then
+
+        print "m.scene.SubtitleSelected: "; m.scene.SubtitleSelected
+        if(m.scene.SubtitleSelected = true AND m.detailsScreen.SubtitleState = "on")
+            subtitle_config = {
+                TrackName: playerInfo.subtitles[m.scene.SubtitleSelectedIndex].file
+            }
+
+            m.videoPlayer.content.subtitleconfig = subtitle_config
+        end if
+
         m.loadingIndicator.control = "stop"
-        print "[Main] Playing video"
+        print "[Main] Playing video with ads"
         m.videoPlayer.visible = true
         m.videoPlayer.setFocus(true)
         m.videoPlayer.control = "play"
@@ -740,8 +771,31 @@ Function handleButtonEvents(index, _isSubscribed, lclScreen)
         'if(index = 1 and _isSubscribed)
             playVideoButton(lclScreen)
 
-        else if(index = 2)  ' This is going to be the favorites button
+        else if(index = 2 AND m.app.device_linking = true AND m.detailsScreen.isDeviceLinked = true)  ' This is going to be the favorites button
             markFavoriteButton(lclScreen)
+        else if((index = 2 AND m.detailsScreen.isDeviceLinked = false AND m.detailsScreen.SubtitleButtonsShown = true) OR (index = 3 AND m.detailsScreen.isDeviceLinked = true AND m.detailsScreen.SubtitleButtonsShown = true))
+            ' Subtitle on/off button
+            print "Subtitle: ON/OFF"
+            if(m.detailsScreen.SubtitleState = "on")
+                m.detailsScreen.SubtitleState = "off"
+            else
+                m.detailsScreen.SubtitleState = "on"
+            end if
+        else if((index = 3 AND m.detailsScreen.isDeviceLinked = false AND m.detailsScreen.SubtitleButtonsShown = true) OR (index = 4 AND m.detailsScreen.isDeviceLinked = true AND m.detailsScreen.SubtitleButtonsShown = true))
+            ' Subtitle selection dialog
+            print "Subtitle Selection"
+            dialog = createObject("roSGNode", "Dialog")
+            dialog.title = "Choose Subtitle"
+            dialog.optionsDialog = true
+            dialog.message = "Please choose your subtitle language."
+            subtitleLanguages = []
+            for each st in m.detailsScreen.Subtitles
+                print "st: "; st
+                subtitleLanguages.push(st.language)
+            end for
+            dialog.buttons = subtitleLanguages
+            m.scene.dialog = dialog
+            m.scene.SubtitleSelected = false
         end if
 
     else    ' Subscribe / Sign In buttons

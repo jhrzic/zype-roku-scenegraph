@@ -66,6 +66,8 @@ Sub OnVideoPlayerStateChange()
         ' error handling
         m.videoPlayer.visible = false
     else if m.videoPlayer.state = "playing"
+        print "[DetailsScreen] OnVideoPlayerStateChange - Playing"
+        print "m.top.btns: "; m.top.btns
         ' playback handling
     else if m.videoPlayer.state = "finished"
         m.videoPlayer.visible = false
@@ -106,6 +108,7 @@ Sub OnContentChange()
     print "Content: "; m.top.content
     m.top.SubscriptionPackagesShown = false
     m.top.SubtitleSelected = false
+    ResetSubtitleStates()
     'm.top.SubtitleState = "off"
     if m.top.content<>invalid then
         idParts = m.top.content.id.tokenize(":")
@@ -163,6 +166,7 @@ Sub AddButtons()
             end if
         end if
 
+        m.top.btns = btns
         m.btns = btns
         for each button in btns
             result.push({title : button})
@@ -180,6 +184,7 @@ Sub AddActionButtons()
             btns.push("Link Device")
         end if
 
+        m.top.btns = btns
         m.btns = btns
         for each button in btns
             result.push({title : button})
@@ -199,6 +204,7 @@ Sub AddPackagesButtons()
            btns.push(plan["title"] + " at " + plan["cost"])
         end for
         
+        m.top.btns = btns
         m.btns = btns
         for each button in btns
             result.push({title : button})
@@ -212,7 +218,7 @@ Function onSubtitlesLoaded()
 End Function
 
 Function onSubtitleSelected()
-    ' print "SubtitleSelected: "; m.top.SubtitleSelected
+    print "SubtitleSelected: "; m.top.SubtitleSelected
     ' subtitle_config = {
     '     TrackName: playerInfo.subtitles[m.detailsScreen.SubtitleSelected].file
     ' }
@@ -223,65 +229,101 @@ End Function
 Function onSetSubtitleLabel()
     print "onSetSubtitleLabel"
     result = []
+    btns = m.top.btns
     i = 0
-    for each button in m.btns
-        if(Instr(1, button, "Subtitle Language:") > 0)
-            button = "Subtitle Language: " + m.top.SetSubtitleLabel
-            m.btns[i] = button
+    for each button in m.top.btns
+        if(Instr(1, button, "Subtitles:") > 0)
+            if(m.top.SetSubtitleLabel = "")
+                m.top.SetSubtitleLabel = "OFF"
+            end if
+            button = "Subtitles: " + m.top.SetSubtitleLabel
+            btns[i] = button
         end if
-        print "button: ";button
+        ' print "button: ";button
         result.push({title: button})
         i = i + 1
     end for
-    print "m.btns: "; m.btns
+    m.top.btns = btns
+    ' print "m.top.btns: "; m.top.btns
     m.buttons.content = ContentList2SimpleNode(result)
 End Function
 
-Function onSetSubtitleState()
-    print "onSetSubtitleState"
-    result = []
-    i = 0
-    for each button in m.btns
-        if(Instr(1, button, "Subtitles:") > 0)
-            button = "Subtitles: " + UCase(m.top.SubtitleState)
-            m.btns[i] = button
-        end if
-        print "button: ";button
-        result.push({title: button})
-        i = i + 1
-    end for
-    print "m.btns: "; m.btns
-    m.buttons.content = ContentList2SimpleNode(result)
-End Function
+' Function onSetSubtitleState()
+'     print "onSetSubtitleState"
+'     result = []
+'     btns = m.top.btns
+'     i = 0
+'     for each button in m.top.btns
+'         if(Instr(1, button, "Subtitles:") > 0)
+'             button = "Subtitles: " + UCase(m.top.SubtitleState)
+'             btns[i] = button
+'         end if
+'         ' print "button: ";button
+'         result.push({title: button})
+'         i = i + 1
+'     end for
+'     m.top.btns = btns
+'     ' print "m.top.btns: "; m.top.btns
+'     m.buttons.content = ContentList2SimpleNode(result)
+' End Function
 
 Function AppendSubtitleButtons()
-    result = []
-    if(hasSubtitleButtons())
-    else
-        m.btns.push("Subtitles: OFF")
-        m.btns.push("Subtitle Language: None Selected")
-    end if
-    
-    for each button in m.btns
-        result.push({title : button})
-    end for
-    m.buttons.content = ContentList2SimpleNode(result)
-    m.top.SubtitleButtonsShown = true
+    print "AppendSubtitleButtons"
+    ' subtitles = m.top.Subtitles
+    ' if(subtitles.Count() > 0)
+        result = []
+        if(hasSubtitleButtons())
+            print "hasSubtitleButtons condition"
+        else if(m.top.SubtitleState = "on")
+            m.btns.push("Subtitles: " + m.top.SetSubtitleLabel)
+            ' m.btns.push("Subtitle Language: None Selected")
+        else
+            print "Default Subtitle Buttons"
+            m.btns.push("Subtitles: OFF")
+            ' m.btns.push("Subtitle Language: None Selected")
+        end if
+
+        m.top.btns = m.btns
+        
+        for each button in m.top.btns
+            result.push({title : button})
+        end for
+        m.buttons.content = ContentList2SimpleNode(result)
+        m.top.SubtitleButtonsShown = true
+        ' print "m.top.btns: "; m.top.btns
+    ' end if
+    print "AppendSubtitleButtons Ends"
 End Function
 
 Function hasSubtitleButtons()
+    print "hasSubtitleButtons"
     found = false
-    for each button in m.btns
+    for each button in m.top.btns
         if(Instr(1, button, "Subtitles:") > 0)
             found = true
             exit for
         end if
     end for
-    print "m.btns: "; m.btns
-    print "found: "; found
+    ' print "m.top.btns: "; m.top.btns
+    ' print "m.top.content.subtitleconfig"; m.top.content.subtitleconfig
+    ' print "m.videoPlayer.availableSubtitleTracks: "; m.videoPlayer.availableSubtitleTracks[0]
+    ' print "found: "; found
     return found
 End Function
 
+Function onBtnsChanged()
+    print "onBtnsChanged"
+    ' print "m.top.btns: "; m.top.btns
+End Function
+
+Function ResetSubtitleStates()
+    m.top.SubtitleSelected = false
+    ' m.top.btns = []
+    ' m.top.Subtitles = []
+    ' m.top.SubtitleSelected = invalid
+    ' m.top.SetSubtitleLabel= ""
+    ' m.top.SubtitleState = "off"
+End Function
 '///////////////////////////////////////////'
 ' Helper function convert AA to Node
 Function ContentList2SimpleNode(contentList as Object, nodeType = "ContentNode" as String) as Object

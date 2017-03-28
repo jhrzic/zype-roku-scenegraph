@@ -72,7 +72,8 @@
         <field id="SubtitleButtonsShown" type="bool" />
         <field id="SubtitleSelected" type="integer" onChange="onSubtitleSelected" />
         <field id="SetSubtitleLabel" type="string" onChange="onSetSubtitleLabel" />
-        <field id="SubtitleState" type="string" onChange="onSetSubtitleState" />
+        <field id="SubtitleState" type="string" />
+        <field id="btns" type="roArray" onChange="onBtnsChanged" />
 
 
     </interface>

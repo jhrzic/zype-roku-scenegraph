@@ -243,8 +243,18 @@ Sub RunUserInterface()
                 m.detailsScreen.Subtitles = playerInfo.subtitles
             
             else if msg.getField() = "SubtitleSelected"
-                language = m.detailsScreen.Subtitles[m.scene.SubtitleSelectedIndex].language
-                m.detailsScreen.SetSubtitleLabel = language
+                if(m.scene.SubtitleSelected = true)
+                    language = m.detailsScreen.Subtitles[m.scene.SubtitleSelectedIndex].language
+                    m.detailsScreen.SetSubtitleLabel = language
+                    m.detailsScreen.SubtitleState = "on"
+                    print "Language: "; language
+                else
+                    ' m.detailsScreen.btns = []
+                    ' m.detailsScreen.Subtitles = []
+                    ' m.detailsScreen.SubtitleSelected = invalid
+                    m.detailsScreen.SetSubtitleLabel= ""
+                    m.detailsScreen.SubtitleState = "off"
+                end if
             end if
 
         end if
@@ -334,7 +344,8 @@ sub playVideo(screen as Object, auth As Object)
     print "m.scene.SubtitleSelected: "; m.scene.SubtitleSelected
     if(m.scene.SubtitleSelected = true AND m.detailsScreen.SubtitleState = "on")
         subtitle_config = {
-            TrackName: playerInfo.subtitles[m.scene.SubtitleSelectedIndex].file
+            TrackName: playerInfo.subtitles[m.scene.SubtitleSelectedIndex].file,
+            Description: playerInfo.subtitles[m.scene.SubtitleSelectedIndex].language
         }
 
         m.videoPlayer.content.subtitleconfig = subtitle_config
@@ -408,21 +419,27 @@ sub playVideoWithAds(screen as Object, auth as Object)
 
     if playContent then
 
-        print "m.scene.SubtitleSelected: "; m.scene.SubtitleSelected
-        print "m.detailsScreen.SubtitleState: "; m.detailsScreen.SubtitleState
+        ' print "m.scene.SubtitleSelected: "; m.scene.SubtitleSelected
+        ' print "m.detailsScreen.SubtitleState: "; m.detailsScreen.SubtitleState
+        ' print "playerInfo.subtitles[m.scene.SubtitleSelectedIndex].title"; playerInfo.subtitles[m.scene.SubtitleSelectedIndex]
         if(m.scene.SubtitleSelected = true AND m.detailsScreen.SubtitleState = "on")
             subtitle_config = {
-                TrackName: playerInfo.subtitles[m.scene.SubtitleSelectedIndex].file
+                TrackName: playerInfo.subtitles[m.scene.SubtitleSelectedIndex].file,
+                Description: playerInfo.subtitles[m.scene.SubtitleSelectedIndex].language
             }
-
+            print "subtitle_config: "; subtitle_config
             m.videoPlayer.content.subtitleconfig = subtitle_config
+            print "[Main] SubtitleConfig1: "; m.videoPlayer.content.subtitleconfig
         end if
 
+        print "Before: m.detailsScreen.btns"; m.detailsScreen.btns 
         m.loadingIndicator.control = "stop"
         print "[Main] Playing video with ads"
+        print "[Main] SubtitleConfig2: "; m.videoPlayer.content.subtitleconfig
         m.videoPlayer.visible = true
         m.videoPlayer.setFocus(true)
         m.videoPlayer.control = "play"
+        print "After: m.detailsScreen.btns"; m.detailsScreen.btns
     end if
 end sub
 
@@ -777,15 +794,7 @@ Function handleButtonEvents(index, _isSubscribed, lclScreen)
         else if((index = 2 AND m.detailsScreen.isDeviceLinked = false AND m.detailsScreen.SubtitleButtonsShown = true) OR (index = 3 AND m.detailsScreen.isDeviceLinked = true AND m.detailsScreen.SubtitleButtonsShown = true))
             ' Subtitle on/off button
             print "Subtitle State Before: "; m.detailsScreen.SubtitleState
-            if(m.detailsScreen.SubtitleState = "on")
-                m.detailsScreen.SubtitleState = "off"
-            else
-                m.detailsScreen.SubtitleState = "on"
-            end if
-            print "Subtitle State After: "; m.detailsScreen.SubtitleState
-        else if((index = 3 AND m.detailsScreen.isDeviceLinked = false AND m.detailsScreen.SubtitleButtonsShown = true) OR (index = 4 AND m.detailsScreen.isDeviceLinked = true AND m.detailsScreen.SubtitleButtonsShown = true))
-            ' Subtitle selection dialog
-            print "Subtitle Selection"
+            m.detailsScreen.SubtitleState = "on"
             dialog = createObject("roSGNode", "Dialog")
             dialog.title = "Choose Subtitle"
             dialog.optionsDialog = true
@@ -798,6 +807,27 @@ Function handleButtonEvents(index, _isSubscribed, lclScreen)
             dialog.buttons = subtitleLanguages
             m.scene.dialog = dialog
             m.scene.SubtitleSelected = false
+            ' if(m.detailsScreen.SubtitleState = "on")
+            '     m.detailsScreen.SubtitleState = "off"
+            ' else
+            '     m.detailsScreen.SubtitleState = "on"
+            ' end if
+            print "Subtitle State After: "; m.detailsScreen.SubtitleState
+        ' else if((index = 3 AND m.detailsScreen.isDeviceLinked = false AND m.detailsScreen.SubtitleButtonsShown = true) OR (index = 4 AND m.detailsScreen.isDeviceLinked = true AND m.detailsScreen.SubtitleButtonsShown = true))
+        '     ' Subtitle selection dialog
+        '     print "Subtitle Selection"
+        '     dialog = createObject("roSGNode", "Dialog")
+        '     dialog.title = "Choose Subtitle"
+        '     dialog.optionsDialog = true
+        '     dialog.message = "Please choose your subtitle language."
+        '     subtitleLanguages = []
+        '     for each st in m.detailsScreen.Subtitles
+        '         print "st: "; st
+        '         subtitleLanguages.push(st.language)
+        '     end for
+        '     dialog.buttons = subtitleLanguages
+        '     m.scene.dialog = dialog
+        '     m.scene.SubtitleSelected = false
         end if
 
     else    ' Subscribe / Sign In buttons

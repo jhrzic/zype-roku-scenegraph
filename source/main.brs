@@ -800,7 +800,10 @@ Function handleButtonEvents(index, _isSubscribed, lclScreen)
             dialog.optionsDialog = true
             dialog.message = "Please choose your subtitle language."
             subtitleLanguages = []
-            for each st in m.detailsScreen.Subtitles
+
+            playerInfo = GetPlayerInfo(m.detailsScreen.content.id, {"app_key": GetApiConfigs().app_key})
+
+            for each st in playerInfo.subtitles
                 print "st: "; st
                 subtitleLanguages.push(st.language)
             end for
